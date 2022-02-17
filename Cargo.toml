@@ -15,7 +15,7 @@ exclude = ["tests/test-keys/*"]
 aes = "0.7.4"
 ctr = "0.8.0"
 digest = "0.10.3"
-hex = "0.4.2"
+hex = { version = "0.4.3", features = ["serde"] }
 hmac = "0.12.0"
 pbkdf2 = "0.10.0"
 rand = "0.8.5"

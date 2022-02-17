@@ -1,4 +1,4 @@
-//! A minimalist library to interact with encrypted JSON keystores as per the
+//! A minimalist library to interact with encrypted keystores as per the
 //! [Web3 Secret Storage Definition](https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition).
 
 //#![deny(missing_docs)]
@@ -55,7 +55,7 @@ impl From<aes::cipher::errors::InvalidLength> for KeystoreError {
 mod keystore;
 
 pub use keystore::{
-    CipherParams, CryptoJson, EthKeystore, KdfType, KdfparamsType,
+    CipherParams, CryptoJson, EthKeystore, KdfType, KdfParamsType,
 };
 type Aes128Ctr = ctr::Ctr128BE<aes::Aes128>;
 
@@ -124,7 +124,7 @@ where
 {
     // Derive the key.
     let key = match &keystore.crypto.kdfparams {
-        KdfparamsType::Pbkdf2 {
+        KdfParamsType::Pbkdf2 {
             c,
             dklen,
             prf: _,
@@ -139,7 +139,7 @@ where
             );
             key
         }
-        KdfparamsType::Scrypt {
+        KdfParamsType::Scrypt {
             dklen,
             n,
             p,
@@ -255,7 +255,7 @@ where
             cipherparams: CipherParams { iv },
             ciphertext: ciphertext.to_vec(),
             kdf: KdfType::Scrypt,
-            kdfparams: KdfparamsType::Scrypt {
+            kdfparams: KdfParamsType::Scrypt {
                 dklen: DEFAULT_KDF_PARAMS_DKLEN,
                 n: 2u32.pow(DEFAULT_KDF_PARAMS_LOG_N as u32),
                 p: DEFAULT_KDF_PARAMS_P,

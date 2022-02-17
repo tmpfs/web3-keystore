@@ -1,9 +1,8 @@
-use hex::{FromHex, ToHex};
-use serde::{de::Deserializer, ser::Serializer, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Deserialize, Serialize)]
-/// This struct represents the deserialized form of an encrypted JSON keystore based on the
+/// This struct represents an encrypted keystore based on the
 /// [Web3 Secret Storage Definition](https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition).
 pub struct EthKeystore {
     /// Version of the Web3 Secret storage definition specification.
@@ -12,24 +11,25 @@ pub struct EthKeystore {
     pub id: Uuid,
     /// Optional public address for the keystore (non-standard).
     pub address: Option<String>,
+    /// Crypto part of the keystore.
     pub crypto: CryptoJson,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-/// Represents the "crypto" part of an encrypted JSON keystore.
+/// Represents the "crypto" part of an encrypted keystore.
 pub struct CryptoJson {
     pub cipher: String,
     pub cipherparams: CipherParams,
     #[serde(
-        serialize_with = "buffer_to_hex",
-        deserialize_with = "hex_to_buffer"
+        serialize_with = "hex::serde::serialize",
+        deserialize_with = "hex::serde::deserialize"
     )]
     pub ciphertext: Vec<u8>,
     pub kdf: KdfType,
-    pub kdfparams: KdfparamsType,
+    pub kdfparams: KdfParamsType,
     #[serde(
-        serialize_with = "buffer_to_hex",
-        deserialize_with = "hex_to_buffer"
+        serialize_with = "hex::serde::serialize",
+        deserialize_with = "hex::serde::deserialize"
     )]
     pub mac: Vec<u8>,
 }
@@ -38,15 +38,15 @@ pub struct CryptoJson {
 /// Represents the "cipherparams" part of an encrypted JSON keystore.
 pub struct CipherParams {
     #[serde(
-        serialize_with = "buffer_to_hex",
-        deserialize_with = "hex_to_buffer"
+        serialize_with = "hex::serde::serialize",
+        deserialize_with = "hex::serde::deserialize"
     )]
     pub iv: Vec<u8>,
 }
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "lowercase")]
-/// Types of key derivition functions supported by the Web3 Secret Storage.
+/// Types of key derivation functions supported by Web3 Secret Storage.
 pub enum KdfType {
     Pbkdf2,
     Scrypt,
@@ -55,14 +55,14 @@ pub enum KdfType {
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 #[serde(untagged)]
 /// Defines the various parameters used in the supported KDFs.
-pub enum KdfparamsType {
+pub enum KdfParamsType {
     Pbkdf2 {
         c: u32,
         dklen: u8,
         prf: String,
         #[serde(
-            serialize_with = "buffer_to_hex",
-            deserialize_with = "hex_to_buffer"
+            serialize_with = "hex::serde::serialize",
+            deserialize_with = "hex::serde::deserialize"
         )]
         salt: Vec<u8>,
     },
@@ -72,29 +72,11 @@ pub enum KdfparamsType {
         p: u32,
         r: u32,
         #[serde(
-            serialize_with = "buffer_to_hex",
-            deserialize_with = "hex_to_buffer"
+            serialize_with = "hex::serde::serialize",
+            deserialize_with = "hex::serde::deserialize"
         )]
         salt: Vec<u8>,
     },
-}
-
-fn buffer_to_hex<T, S>(buffer: &T, serializer: S) -> Result<S::Ok, S::Error>
-where
-    T: AsRef<[u8]>,
-    S: Serializer,
-{
-    serializer.serialize_str(&buffer.encode_hex::<String>())
-}
-
-fn hex_to_buffer<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    use serde::de::Error;
-    String::deserialize(deserializer).and_then(|string| {
-        Vec::from_hex(&string).map_err(|err| Error::custom(err.to_string()))
-    })
 }
 
 #[cfg(test)]
@@ -142,7 +124,7 @@ mod tests {
         assert_eq!(keystore.crypto.kdf, KdfType::Pbkdf2);
         assert_eq!(
             keystore.crypto.kdfparams,
-            KdfparamsType::Pbkdf2 {
+            KdfParamsType::Pbkdf2 {
                 c: 262144,
                 dklen: 32,
                 prf: String::from("hmac-sha256"),
@@ -201,7 +183,7 @@ mod tests {
         assert_eq!(keystore.crypto.kdf, KdfType::Scrypt);
         assert_eq!(
             keystore.crypto.kdfparams,
-            KdfparamsType::Scrypt {
+            KdfParamsType::Scrypt {
                 dklen: 32,
                 n: 262144,
                 p: 8,
