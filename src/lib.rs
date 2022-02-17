@@ -24,12 +24,12 @@ use uuid::Uuid;
 #[derive(Error, Debug)]
 /// An error thrown when encrypting or decrypting keystores.
 pub enum KeyStoreError {
-    /// An error thrown while decrypting an encrypted JSON
-    /// keystore if the calculated MAC does not
+    /// An error thrown while decrypting an encrypted
+    /// keystore if the computed MAC does not
     /// match the MAC declared in the keystore.
     #[error("Mac Mismatch")]
     MacMismatch,
-    /// Invalid scrypt output length
+    /// Invalid scrypt parameters
     #[error("scrypt {0:?}")]
     ScryptInvalidParams(scrypt::errors::InvalidParams),
     /// Invalid scrypt output length
@@ -74,7 +74,7 @@ const DEFAULT_KDF_PARAMS_LOG_N: u8 = 13u8;
 const DEFAULT_KDF_PARAMS_R: u32 = 8u32;
 const DEFAULT_KDF_PARAMS_P: u32 = 1u32;
 
-/// Creates a new keystore using the
+/// Creates a new keystore using a random 32 byte secret and the
 /// [Scrypt](https://tools.ietf.org/html/rfc7914.html)
 /// key derivation function.
 ///
@@ -83,44 +83,41 @@ const DEFAULT_KDF_PARAMS_P: u32 = 1u32;
 /// # Example
 ///
 /// ```no_run
-/// use web3_keystore::new;
-/// # async fn foobar() -> Result<(), Box<dyn std::error::Error>> {
+/// use web3_keystore::new_random;
 /// let mut rng = rand::thread_rng();
-/// let (keystore, secret) = new(&mut rng, "password_to_keystore", None)?;
-/// # Ok(())
-/// # }
+/// let password = "super-secret-password";
+/// let (keystore, secret) = new_random(&mut rng, password).unwrap();
+/// assert_eq!(32, secret.len());
 /// ```
-pub fn new<R, S>(
+pub fn new_random<R, S>(
     rng: &mut R,
     password: S,
-    address: Option<String>,
 ) -> Result<(KeyStore, Vec<u8>), KeyStoreError>
 where
     R: Rng + CryptoRng,
     S: AsRef<[u8]>,
 {
-    // Generate a random private key.
     let pk: [u8; DEFAULT_KEY_SIZE] = rng.gen();
-    Ok((encrypt_key(rng, &pk, password, address)?, pk.to_vec()))
+    Ok((encrypt(rng, &pk, password, None)?, pk.to_vec()))
 }
 
 /// Decrypts an encrypted keystore using the provided `password`.
+///
 /// Decryption supports the
 /// [Scrypt](https://tools.ietf.org/html/rfc7914.html) and
 /// [PBKDF2](https://ietf.org/rfc/rfc2898.txt) key derivation functions.
 ///
 /// # Example
 ///
-/// ```no_run
-/// use web3_keystore::{decrypt_key, new};
-/// # async fn foobar() -> Result<(), Box<dyn std::error::Error>> {
-/// let mut rng = rand::thread_rng();
-/// let (keystore, _) = new(&mut rng, "password_to_keystore", None)?;
-/// let private_key = decrypt_key(&keystore, "password_to_keystore")?;
-/// # Ok(())
-/// # }
 /// ```
-pub fn decrypt_key<S>(
+/// use web3_keystore::{decrypt, new_random};
+/// let mut rng = rand::thread_rng();
+/// let password = "super-secret-password";
+/// let (keystore, secret) = new_random(&mut rng, password).unwrap();
+/// let private_key = decrypt(&keystore, password).unwrap();
+/// assert_eq!(secret, private_key);
+/// ```
+pub fn decrypt<S>(
     keystore: &KeyStore,
     password: S,
 ) -> Result<Vec<u8>, KeyStoreError>
@@ -192,22 +189,19 @@ where
 ///
 /// # Example
 ///
-/// ```no_run
-/// use web3_keystore::encrypt_key;
-/// use rand::Rng;
-///
-/// # async fn foobar() -> Result<(), Box<dyn std::error::Error>> {
-/// let mut rng = rand::thread_rng();
-///
-/// // Construct a 32-byte random private key.
-/// let private_key: [u8; 32] = rng.gen();
-///
-/// let address = Some(String::from("0x0"));
-/// let keystore = encrypt_key(&mut rng, &private_key, "password_to_keystore", address)?;
-/// # Ok(())
-/// # }
 /// ```
-pub fn encrypt_key<R, B, S>(
+/// use web3_keystore::{encrypt, decrypt};
+/// use rand::Rng;
+/// let mut rng = rand::thread_rng();
+/// let secret: [u8; 32] = rng.gen();
+/// let password = "super-secret-password";
+/// let address = Some(String::from("0x0"));
+/// let keystore = encrypt(
+///     &mut rng, &secret, password, address).unwrap();
+/// let private_key = decrypt(&keystore, password).unwrap();
+/// assert_eq!(secret.to_vec(), private_key);
+/// ```
+pub fn encrypt<R, B, S>(
     rng: &mut R,
     pk: B,
     password: S,
