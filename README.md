@@ -7,5 +7,5 @@ A minimalist library to interact with encrypted JSON keystores as per the [Web3 
 [![Documentation]][docs.rs]
 
 [eth-keystore-rs]: https://github.com/roynalnaruto/eth-keystore-rs
-[Documentation]: https://docs.rs/mio/badge.svg?version=0.3.0
+[Documentation]: https://docs.rs/web3-keystore/badge.svg?version=0.4.1
 [docs.rs]: https://docs.rs/web3-keystore/latest/web3_keystore/
