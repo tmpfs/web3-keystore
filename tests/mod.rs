@@ -1,74 +1,71 @@
-use eth_keystore::{decrypt_key, encrypt_key, new};
+use anyhow::Result;
 use hex::FromHex;
-use std::path::Path;
+use web3_keystore::{decrypt_key, encrypt_key, new, EthKeystore};
+
+fn load_test_key(name: &str) -> Result<EthKeystore> {
+    let path = format!("./tests/test-keys/{}", name);
+    let contents = std::fs::read_to_string(&path)?;
+    let keystore: EthKeystore = serde_json::from_str(&contents)?;
+    Ok(keystore)
+}
 
 mod tests {
     use super::*;
 
     #[test]
-    fn test_new() {
-        let dir = Path::new("./tests/test-keys");
+    fn test_new() -> Result<()> {
         let mut rng = rand::thread_rng();
-        let (secret, id) = new(&dir, &mut rng, "thebestrandompassword", None).unwrap();
+        let (keystore, secret) = new(&mut rng, "thebestrandompassword", None)?;
 
-        let keypath = dir.join(&id);
-
-        assert_eq!(
-            decrypt_key(&keypath, "thebestrandompassword").unwrap(),
-            secret
-        );
-        assert!(decrypt_key(&keypath, "notthebestrandompassword").is_err());
-        assert!(std::fs::remove_file(&keypath).is_ok());
+        assert_eq!(decrypt_key(&keystore, "thebestrandompassword")?, secret);
+        assert!(decrypt_key(&keystore, "notthebestrandompassword").is_err());
+        Ok(())
     }
 
     #[test]
-    fn test_new_with_name() {
-        let dir = Path::new("./tests/test-keys");
+    fn test_new_with_address() -> Result<()> {
         let mut rng = rand::thread_rng();
-        let name = "my_keystore";
-        let (secret, _id) = new(&dir, &mut rng, "thebestrandompassword", Some(name)).unwrap();
-
-        let keypath = dir.join(&name);
-
-        assert_eq!(
-            decrypt_key(&keypath, "thebestrandompassword").unwrap(),
-            secret
-        );
-        assert!(std::fs::remove_file(&keypath).is_ok());
+        let address = String::from("0xdeadbeef");
+        let (keystore, secret) =
+            new(&mut rng, "thebestrandompassword", Some(address))?;
+        assert_eq!(decrypt_key(&keystore, "thebestrandompassword")?, secret);
+        Ok(())
     }
 
     #[test]
-    fn test_decrypt_pbkdf2() {
-        let secret =
-            Vec::from_hex("7a28b5ba57c53603b0b07b56bba752f7784bf506fa95edc395f5cf6c7514fe9d")
-                .unwrap();
-        let keypath = Path::new("./tests/test-keys/key-pbkdf2.json");
-        assert_eq!(decrypt_key(&keypath, "testpassword").unwrap(), secret);
-        assert!(decrypt_key(&keypath, "wrongtestpassword").is_err());
+    fn test_decrypt_pbkdf2() -> Result<()> {
+        let secret = Vec::from_hex(
+            "7a28b5ba57c53603b0b07b56bba752f7784bf506fa95edc395f5cf6c7514fe9d",
+        )?;
+        let keystore = load_test_key("key-pbkdf2.json")?;
+        assert_eq!(decrypt_key(&keystore, "testpassword")?, secret);
+        assert!(decrypt_key(&keystore, "wrongtestpassword").is_err());
+        Ok(())
     }
 
     #[test]
-    fn test_decrypt_scrypt() {
-        let secret =
-            Vec::from_hex("80d3a6ed7b24dcd652949bc2f3827d2f883b3722e3120b15a93a2e0790f03829")
-                .unwrap();
-        let keypath = Path::new("./tests/test-keys/key-scrypt.json");
-        assert_eq!(decrypt_key(&keypath, "grOQ8QDnGHvpYJf").unwrap(), secret);
-        assert!(decrypt_key(&keypath, "thisisnotrandom").is_err());
+    fn test_decrypt_scrypt() -> Result<()> {
+        let secret = Vec::from_hex(
+            "80d3a6ed7b24dcd652949bc2f3827d2f883b3722e3120b15a93a2e0790f03829",
+        )
+        .unwrap();
+        let keystore = load_test_key("key-scrypt.json")?;
+        assert_eq!(decrypt_key(&keystore, "grOQ8QDnGHvpYJf")?, secret);
+        assert!(decrypt_key(&keystore, "thisisnotrandom").is_err());
+        Ok(())
     }
 
     #[test]
-    fn test_encrypt_decrypt_key() {
-        let secret =
-            Vec::from_hex("7a28b5ba57c53603b0b07b56bba752f7784bf506fa95edc395f5cf6c7514fe9d")
-                .unwrap();
-        let dir = Path::new("./tests/test-keys");
+    fn test_encrypt_decrypt_key() -> Result<()> {
+        let secret = Vec::from_hex(
+            "7a28b5ba57c53603b0b07b56bba752f7784bf506fa95edc395f5cf6c7514fe9d",
+        )
+        .unwrap();
         let mut rng = rand::thread_rng();
-        let name = encrypt_key(&dir, &mut rng, &secret, "newpassword", None).unwrap();
+        let keystore = encrypt_key(&mut rng, &secret, "newpassword", None)?;
 
-        let keypath = dir.join(&name);
-        assert_eq!(decrypt_key(&keypath, "newpassword").unwrap(), secret);
-        assert!(decrypt_key(&keypath, "notanewpassword").is_err());
-        assert!(std::fs::remove_file(&keypath).is_ok());
+        assert_eq!(decrypt_key(&keystore, "newpassword")?, secret);
+        assert!(decrypt_key(&keystore, "notanewpassword").is_err());
+        Ok(())
     }
 }

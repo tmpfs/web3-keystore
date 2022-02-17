@@ -2,7 +2,7 @@
 name = "web3-keystore"
 version = "0.3.0"
 authors = ["Muji <muji@tmpfs.org>", "Rohit Narurkar <rohit.narurkar@protonmail.com>"]
-edition = "2018"
+edition = "2021"
 license = "Apache-2.0"
 description = "A minimalist library to interact with encrypted JSON keystores"
 documentation = "https://docs.rs/web3-keystore"
@@ -21,8 +21,11 @@ pbkdf2 = "0.10.0"
 rand = "0.8.4"
 scrypt = "0.8.1"
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
 sha2 = "0.10.1"
 sha3 = "0.10.0"
 thiserror = { version = "1.0.22", default-features = false }
 uuid = { version = "0.8", features = ["serde", "v4"] }
+
+[dev-dependencies]
+serde_json = "1.0"
+anyhow = "1"

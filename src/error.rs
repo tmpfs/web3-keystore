@@ -7,12 +7,6 @@ pub enum KeystoreError {
     /// match the MAC declared in the keystore.
     #[error("Mac Mismatch")]
     MacMismatch,
-    /// An error thrown by the Rust `std::io` module.
-    #[error("IO: {0}")]
-    StdIo(String),
-    /// An error thrown by the [Serde JSON](https://docs.serde.rs/serde_json/) crate.
-    #[error("serde-json: {0}")]
-    SerdeJson(String),
     /// Invalid scrypt output length
     #[error("scrypt {0:?}")]
     ScryptInvalidParams(scrypt::errors::InvalidParams),
@@ -39,17 +33,5 @@ impl From<scrypt::errors::InvalidOutputLen> for KeystoreError {
 impl From<aes::cipher::errors::InvalidLength> for KeystoreError {
     fn from(e: aes::cipher::errors::InvalidLength) -> Self {
         Self::AesInvalidKeyNonceLength(e)
-    }
-}
-
-impl From<std::io::Error> for KeystoreError {
-    fn from(e: std::io::Error) -> KeystoreError {
-        KeystoreError::StdIo(e.to_string())
-    }
-}
-
-impl From<serde_json::Error> for KeystoreError {
-    fn from(e: serde_json::Error) -> KeystoreError {
-        KeystoreError::SerdeJson(e.to_string())
     }
 }
