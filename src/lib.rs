@@ -1,9 +1,9 @@
 //! A library to encrypt and decrypt keystores as per the
 //! [Web3 Secret Storage Definition](https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition).
 //!
-//! This is a fork of 
+//! This is a fork of
 //! [eth-keystore-rs](https://docs.rs/eth-keystore/latest/eth_keystore/) which
-//! does not write to disc automatically so is 
+//! does not write to disc automatically so is
 //! easier to integrate with WASM and storage
 //! destinations other than the file system.
 
@@ -60,9 +60,7 @@ impl From<aes::cipher::InvalidLength> for KeyStoreError {
 
 mod keystore;
 
-use keystore::{
-    CipherParams, CryptoData, KdfParamsType, KdfType,
-};
+use keystore::{CipherParams, CryptoData, KdfParamsType, KdfType};
 
 pub use keystore::KeyStore;
 
@@ -76,7 +74,7 @@ const DEFAULT_KDF_PARAMS_LOG_N: u8 = 13u8;
 const DEFAULT_KDF_PARAMS_R: u32 = 8u32;
 const DEFAULT_KDF_PARAMS_P: u32 = 1u32;
 
-/// Creates a new keystore using the 
+/// Creates a new keystore using the
 /// [Scrypt](https://tools.ietf.org/html/rfc7914.html)
 /// key derivation function.
 ///
@@ -107,7 +105,7 @@ where
 }
 
 /// Decrypts an encrypted keystore using the provided `password`.
-/// Decryption supports the 
+/// Decryption supports the
 /// [Scrypt](https://tools.ietf.org/html/rfc7914.html) and
 /// [PBKDF2](https://ietf.org/rfc/rfc2898.txt) key derivation functions.
 ///
