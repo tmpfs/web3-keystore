@@ -83,7 +83,6 @@ const DEFAULT_KDF_PARAMS_P: u32 = 1u32;
 ///
 /// ```no_run
 /// use web3_keystore::new;
-/// use std::path::Path;
 ///
 /// # async fn foobar() -> Result<(), Box<dyn std::error::Error>> {
 /// let mut rng = rand::thread_rng();
@@ -116,7 +115,6 @@ where
 ///
 /// ```no_run
 /// use web3_keystore::{decrypt_key, new};
-/// use std::path::Path;
 ///
 /// # async fn foobar() -> Result<(), Box<dyn std::error::Error>> {
 /// let mut rng = rand::thread_rng();
@@ -200,7 +198,6 @@ where
 /// ```no_run
 /// use web3_keystore::encrypt_key;
 /// use rand::RngCore;
-/// use std::path::Path;
 ///
 /// # async fn foobar() -> Result<(), Box<dyn std::error::Error>> {
 /// let mut rng = rand::thread_rng();
