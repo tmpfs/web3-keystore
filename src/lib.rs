@@ -1,4 +1,4 @@
-//! A library to encrypt and decrypt keystores as per the
+//! Library to encrypt and decrypt keystores as per the
 //! [Web3 Secret Storage Definition](https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition).
 //!
 //! This is a fork of

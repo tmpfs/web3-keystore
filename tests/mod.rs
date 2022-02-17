@@ -1,5 +1,4 @@
 use anyhow::Result;
-use hex::FromHex;
 use web3_keystore::{decrypt, encrypt, new_random, KeyStore};
 
 fn load_test_key(name: &str) -> Result<KeyStore> {
@@ -21,7 +20,7 @@ fn test_new() -> Result<()> {
 
 #[test]
 fn test_decrypt_pbkdf2() -> Result<()> {
-    let secret = Vec::from_hex(
+    let secret = hex::decode(
         "7a28b5ba57c53603b0b07b56bba752f7784bf506fa95edc395f5cf6c7514fe9d",
     )?;
     let keystore = load_test_key("key-pbkdf2.json")?;
@@ -32,7 +31,7 @@ fn test_decrypt_pbkdf2() -> Result<()> {
 
 #[test]
 fn test_decrypt_scrypt() -> Result<()> {
-    let secret = Vec::from_hex(
+    let secret = hex::decode(
         "80d3a6ed7b24dcd652949bc2f3827d2f883b3722e3120b15a93a2e0790f03829",
     )
     .unwrap();
@@ -44,7 +43,7 @@ fn test_decrypt_scrypt() -> Result<()> {
 
 #[test]
 fn test_encrypt_decrypt() -> Result<()> {
-    let secret = Vec::from_hex(
+    let secret = hex::decode(
         "7a28b5ba57c53603b0b07b56bba752f7784bf506fa95edc395f5cf6c7514fe9d",
     )
     .unwrap();
