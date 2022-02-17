@@ -138,7 +138,7 @@ where
             let mut key = vec![0u8; *dklen as usize];
             pbkdf2::<Hmac<Sha256>>(
                 password.as_ref(),
-                &salt,
+                salt,
                 *c,
                 key.as_mut_slice(),
             );
@@ -156,7 +156,7 @@ where
             let scrypt_params = ScryptParams::new(log_n, *r, *p)?;
             scrypt(
                 password.as_ref(),
-                &salt,
+                salt,
                 &scrypt_params,
                 key.as_mut_slice(),
             )?;
