@@ -1,12 +1,12 @@
 [package]
-name = "eth-keystore"
+name = "web3-keystore"
 version = "0.3.0"
-authors = ["Rohit Narurkar <rohit.narurkar@protonmail.com>"]
+authors = ["Muji <muji@tmpfs.org>", "Rohit Narurkar <rohit.narurkar@protonmail.com>"]
 edition = "2018"
 license = "Apache-2.0"
 description = "A minimalist library to interact with encrypted JSON keystores"
-documentation = "https://docs.rs/eth-keystore"
-repository = "https://github.com/roynalnaruto/eth-keystore-rs"
+documentation = "https://docs.rs/web3-keystore"
+repository = "https://github.com/tmpfs/web3-keystore"
 readme = "README.md"
 keywords = ["ethereum", "web3", "wallet"]
 exclude = ["tests/test-keys/*"]
