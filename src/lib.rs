@@ -7,7 +7,7 @@
 //! easier to integrate with WASM and storage
 //! destinations other than the file system.
 
-//#![deny(missing_docs)]
+#![deny(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 use ctr::cipher::{NewCipher, StreamCipher};
@@ -60,9 +60,12 @@ impl From<aes::cipher::errors::InvalidLength> for KeyStoreError {
 
 mod keystore;
 
-pub use keystore::{
-    CipherParams, CryptoData, KeyStore, KdfParamsType, KdfType,
+use keystore::{
+    CipherParams, CryptoData, KdfParamsType, KdfType,
 };
+
+pub use keystore::KeyStore;
+
 type Aes128Ctr = ctr::Ctr128BE<aes::Aes128>;
 
 const DEFAULT_CIPHER: &str = "aes-128-ctr";
@@ -83,7 +86,6 @@ const DEFAULT_KDF_PARAMS_P: u32 = 1u32;
 ///
 /// ```no_run
 /// use web3_keystore::new;
-///
 /// # async fn foobar() -> Result<(), Box<dyn std::error::Error>> {
 /// let mut rng = rand::thread_rng();
 /// let (keystore, secret) = new(&mut rng, "password_to_keystore", None)?;
@@ -100,10 +102,8 @@ where
     S: AsRef<[u8]>,
 {
     // Generate a random private key.
-    let mut pk = vec![0u8; DEFAULT_KEY_SIZE];
-    rng.fill_bytes(pk.as_mut_slice());
-
-    Ok((encrypt_key(rng, &pk, password, address)?, pk))
+    let pk: [u8; DEFAULT_KEY_SIZE] = rng.gen();
+    Ok((encrypt_key(rng, &pk, password, address)?, pk.to_vec()))
 }
 
 /// Decrypts an encrypted keystore using the provided `password`.
@@ -115,7 +115,6 @@ where
 ///
 /// ```no_run
 /// use web3_keystore::{decrypt_key, new};
-///
 /// # async fn foobar() -> Result<(), Box<dyn std::error::Error>> {
 /// let mut rng = rand::thread_rng();
 /// let (keystore, _) = new(&mut rng, "password_to_keystore", None)?;
@@ -197,14 +196,13 @@ where
 ///
 /// ```no_run
 /// use web3_keystore::encrypt_key;
-/// use rand::RngCore;
+/// use rand::Rng;
 ///
 /// # async fn foobar() -> Result<(), Box<dyn std::error::Error>> {
 /// let mut rng = rand::thread_rng();
 ///
 /// // Construct a 32-byte random private key.
-/// let mut private_key = vec![0u8; 32];
-/// rng.fill_bytes(private_key.as_mut_slice());
+/// let private_key: [u8; 32] = rng.gen();
 ///
 /// let address = Some(String::from("0x0"));
 /// let keystore = encrypt_key(&mut rng, &private_key, "password_to_keystore", address)?;

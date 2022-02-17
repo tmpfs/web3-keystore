@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Deserialize, Serialize)]
-/// This struct represents an encrypted keystore based on the
+/// Opaque type that represents an encrypted keystore based on the
 /// [Web3 Secret Storage Definition](https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition).
 pub struct KeyStore {
     /// Version of the Web3 Secret storage definition specification.
@@ -12,7 +12,7 @@ pub struct KeyStore {
     /// Optional public address for the keystore (non-standard).
     pub address: Option<String>,
     /// Crypto part of the keystore.
-    pub crypto: CryptoData,
+    pub(crate) crypto: CryptoData,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
