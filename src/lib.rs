@@ -1,7 +1,8 @@
-//#![deny(missing_docs)]
-#![cfg_attr(docsrs, feature(doc_cfg))]
 //! A minimalist library to interact with encrypted JSON keystores as per the
 //! [Web3 Secret Storage Definition](https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition).
+
+//#![deny(missing_docs)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 use ctr::cipher::{NewCipher, StreamCipher};
 use digest::{Digest, Update};
@@ -12,13 +13,49 @@ use scrypt::{scrypt, Params as ScryptParams};
 use sha2::Sha256;
 use sha3::Keccak256;
 use uuid::Uuid;
+use thiserror::Error;
 
-mod error;
+#[derive(Error, Debug)]
+/// An error thrown when encrypting or decrypting keystores.
+pub enum KeystoreError {
+    /// An error thrown while decrypting an encrypted JSON 
+    /// keystore if the calculated MAC does not
+    /// match the MAC declared in the keystore.
+    #[error("Mac Mismatch")]
+    MacMismatch,
+    /// Invalid scrypt output length
+    #[error("scrypt {0:?}")]
+    ScryptInvalidParams(scrypt::errors::InvalidParams),
+    /// Invalid scrypt output length
+    #[error("scrypt {0:?}")]
+    ScryptInvalidOuputLen(scrypt::errors::InvalidOutputLen),
+    /// Invalid aes key nonce length
+    #[error("aes {0:?}")]
+    AesInvalidKeyNonceLength(aes::cipher::errors::InvalidLength),
+}
+
+impl From<scrypt::errors::InvalidParams> for KeystoreError {
+    fn from(e: scrypt::errors::InvalidParams) -> Self {
+        Self::ScryptInvalidParams(e)
+    }
+}
+
+impl From<scrypt::errors::InvalidOutputLen> for KeystoreError {
+    fn from(e: scrypt::errors::InvalidOutputLen) -> Self {
+        Self::ScryptInvalidOuputLen(e)
+    }
+}
+
+impl From<aes::cipher::errors::InvalidLength> for KeystoreError {
+    fn from(e: aes::cipher::errors::InvalidLength) -> Self {
+        Self::AesInvalidKeyNonceLength(e)
+    }
+}
+
 mod keystore;
 
-pub use error::KeystoreError;
 pub use keystore::{
-    CipherparamsJson, CryptoJson, EthKeystore, KdfType, KdfparamsType,
+    CipherParams, CryptoJson, EthKeystore, KdfType, KdfparamsType,
 };
 type Aes128Ctr = ctr::Ctr128BE<aes::Aes128>;
 
@@ -144,7 +181,8 @@ where
     Ok(pk)
 }
 
-/// Encrypts the given private key using the [Scrypt](https://tools.ietf.org/html/rfc7914.html)
+/// Encrypts the given private key using the 
+/// [Scrypt](https://tools.ietf.org/html/rfc7914.html)
 /// password-based key derivation function.
 ///
 /// # Example
@@ -214,7 +252,7 @@ where
         version: 3,
         crypto: CryptoJson {
             cipher: String::from(DEFAULT_CIPHER),
-            cipherparams: CipherparamsJson { iv },
+            cipherparams: CipherParams { iv },
             ciphertext: ciphertext.to_vec(),
             kdf: KdfType::Scrypt,
             kdfparams: KdfparamsType::Scrypt {
@@ -227,11 +265,6 @@ where
             mac: mac.to_vec(),
         },
     };
-    //let contents = serde_json::to_string(&keystore)?;
-
-    //// Create a file in write-only mode, to store the encrypted JSON keystore.
-    //let mut file = File::create(dir.as_ref().join(&name))?;
-    //file.write_all(contents.as_bytes())?;
 
     Ok(keystore)
 }

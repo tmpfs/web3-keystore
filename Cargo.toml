@@ -14,11 +14,11 @@ exclude = ["tests/test-keys/*"]
 [dependencies]
 aes = "0.7.4"
 ctr = "0.8.0"
-digest = "0.10.0"
+digest = "0.10.3"
 hex = "0.4.2"
 hmac = "0.12.0"
 pbkdf2 = "0.10.0"
-rand = "0.8.4"
+rand = "0.8.5"
 scrypt = "0.8.1"
 serde = { version = "1.0", features = ["derive"] }
 sha2 = "0.10.1"
@@ -27,5 +27,5 @@ thiserror = { version = "1.0.22", default-features = false }
 uuid = { version = "0.8", features = ["serde", "v4"] }
 
 [dev-dependencies]
-serde_json = "1.0"
+serde_json = "1"
 anyhow = "1"

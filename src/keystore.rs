@@ -19,7 +19,7 @@ pub struct EthKeystore {
 /// Represents the "crypto" part of an encrypted JSON keystore.
 pub struct CryptoJson {
     pub cipher: String,
-    pub cipherparams: CipherparamsJson,
+    pub cipherparams: CipherParams,
     #[serde(
         serialize_with = "buffer_to_hex",
         deserialize_with = "hex_to_buffer"
@@ -36,7 +36,7 @@ pub struct CryptoJson {
 
 #[derive(Debug, Deserialize, Serialize)]
 /// Represents the "cipherparams" part of an encrypted JSON keystore.
-pub struct CipherparamsJson {
+pub struct CipherParams {
     #[serde(
         serialize_with = "buffer_to_hex",
         deserialize_with = "hex_to_buffer"
