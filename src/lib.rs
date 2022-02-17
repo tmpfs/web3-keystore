@@ -10,7 +10,7 @@
 #![deny(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
-use ctr::cipher::{NewCipher, StreamCipher};
+use aes::cipher::{KeyIvInit, StreamCipher};
 use digest::{Digest, Update};
 use hmac::Hmac;
 use pbkdf2::pbkdf2;
@@ -37,7 +37,7 @@ pub enum KeyStoreError {
     ScryptInvalidOuputLen(scrypt::errors::InvalidOutputLen),
     /// Invalid aes key nonce length
     #[error("aes {0:?}")]
-    AesInvalidKeyNonceLength(aes::cipher::errors::InvalidLength),
+    AesInvalidKeyNonceLength(aes::cipher::InvalidLength),
 }
 
 impl From<scrypt::errors::InvalidParams> for KeyStoreError {
@@ -52,8 +52,8 @@ impl From<scrypt::errors::InvalidOutputLen> for KeyStoreError {
     }
 }
 
-impl From<aes::cipher::errors::InvalidLength> for KeyStoreError {
-    fn from(e: aes::cipher::errors::InvalidLength) -> Self {
+impl From<aes::cipher::InvalidLength> for KeyStoreError {
+    fn from(e: aes::cipher::InvalidLength) -> Self {
         Self::AesInvalidKeyNonceLength(e)
     }
 }

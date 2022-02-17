@@ -4,14 +4,13 @@ version = 3
 
 [[package]]
 name = "aes"
-version = "0.7.5"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e8b47f52ea9bae42228d07ec09eb676433d7c4ed1ebdf0f1d1c29ed446f1ab8"
+checksum = "0f6c3373fb58bb23c6ed0f191f915f0e9459c6929fc430c0d74b8237c521953a"
 dependencies = [
  "cfg-if",
- "cipher",
+ "cipher 0.4.2",
  "cpufeatures",
- "opaque-debug",
 ]
 
 [[package]]
@@ -57,6 +56,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "cipher"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "035bd298db1557b73a277e9c599c5a50e0d2e6ee9dcac78f3f951cb2f7d88d8c"
+dependencies = [
+ "crypto-common",
+ "inout",
+]
+
+[[package]]
 name = "cpufeatures"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -77,11 +86,11 @@ dependencies = [
 
 [[package]]
 name = "ctr"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "049bb91fb4aaf0e3c7efa6cd5ef877dbbbd15b39dad06d9948de4ec8a75761ea"
+checksum = "60285fea15f574bab32ef340b8283047ea25af2c056ca54e1518300c3091b88f"
 dependencies = [
- "cipher",
+ "cipher 0.4.2",
 ]
 
 [[package]]
@@ -137,6 +146,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "inout"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e1f03d4ab4d5dc9ec2d219f86c15d2a15fc08239d1cd3b2d6a19717c0a2f443"
+dependencies = [
+ "generic-array",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -177,12 +195,6 @@ checksum = "51b9bbe6c47d51fc3e1a9b945965946b4c44142ab8792c50835a980d362c2710"
 dependencies = [
  "cfg-if",
 ]
-
-[[package]]
-name = "opaque-debug"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
 name = "password-hash"
@@ -273,7 +285,7 @@ version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c0fbb5f676da676c260ba276a8f43a8dc67cf02d1438423aeb1c677a7212686"
 dependencies = [
- "cipher",
+ "cipher 0.3.0",
 ]
 
 [[package]]
