@@ -1,11 +1,11 @@
 use anyhow::Result;
 use hex::FromHex;
-use web3_keystore::{decrypt_key, encrypt_key, new, EthKeystore};
+use web3_keystore::{decrypt_key, encrypt_key, new, KeyStore};
 
-fn load_test_key(name: &str) -> Result<EthKeystore> {
+fn load_test_key(name: &str) -> Result<KeyStore> {
     let path = format!("./tests/test-keys/{}", name);
     let contents = std::fs::read_to_string(&path)?;
-    let keystore: EthKeystore = serde_json::from_str(&contents)?;
+    let keystore: KeyStore = serde_json::from_str(&contents)?;
     Ok(keystore)
 }
 

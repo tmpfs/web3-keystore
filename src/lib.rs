@@ -1,5 +1,11 @@
-//! A minimalist library to interact with encrypted keystores as per the
+//! A library to encrypt and decrypt keystores as per the
 //! [Web3 Secret Storage Definition](https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition).
+//!
+//! This is a fork of 
+//! [eth-keystore-rs](https://docs.rs/eth-keystore/latest/eth_keystore/) which
+//! does not write to disc automatically so is 
+//! easier to integrate with WASM and storage
+//! destinations other than the file system.
 
 //#![deny(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
@@ -12,13 +18,13 @@ use rand::{CryptoRng, Rng};
 use scrypt::{scrypt, Params as ScryptParams};
 use sha2::Sha256;
 use sha3::Keccak256;
-use uuid::Uuid;
 use thiserror::Error;
+use uuid::Uuid;
 
 #[derive(Error, Debug)]
 /// An error thrown when encrypting or decrypting keystores.
-pub enum KeystoreError {
-    /// An error thrown while decrypting an encrypted JSON 
+pub enum KeyStoreError {
+    /// An error thrown while decrypting an encrypted JSON
     /// keystore if the calculated MAC does not
     /// match the MAC declared in the keystore.
     #[error("Mac Mismatch")]
@@ -34,19 +40,19 @@ pub enum KeystoreError {
     AesInvalidKeyNonceLength(aes::cipher::errors::InvalidLength),
 }
 
-impl From<scrypt::errors::InvalidParams> for KeystoreError {
+impl From<scrypt::errors::InvalidParams> for KeyStoreError {
     fn from(e: scrypt::errors::InvalidParams) -> Self {
         Self::ScryptInvalidParams(e)
     }
 }
 
-impl From<scrypt::errors::InvalidOutputLen> for KeystoreError {
+impl From<scrypt::errors::InvalidOutputLen> for KeyStoreError {
     fn from(e: scrypt::errors::InvalidOutputLen) -> Self {
         Self::ScryptInvalidOuputLen(e)
     }
 }
 
-impl From<aes::cipher::errors::InvalidLength> for KeystoreError {
+impl From<aes::cipher::errors::InvalidLength> for KeyStoreError {
     fn from(e: aes::cipher::errors::InvalidLength) -> Self {
         Self::AesInvalidKeyNonceLength(e)
     }
@@ -55,7 +61,7 @@ impl From<aes::cipher::errors::InvalidLength> for KeystoreError {
 mod keystore;
 
 pub use keystore::{
-    CipherParams, CryptoJson, EthKeystore, KdfType, KdfParamsType,
+    CipherParams, CryptoData, KeyStore, KdfParamsType, KdfType,
 };
 type Aes128Ctr = ctr::Ctr128BE<aes::Aes128>;
 
@@ -67,8 +73,11 @@ const DEFAULT_KDF_PARAMS_LOG_N: u8 = 13u8;
 const DEFAULT_KDF_PARAMS_R: u32 = 8u32;
 const DEFAULT_KDF_PARAMS_P: u32 = 1u32;
 
-/// Creates a new JSON keystore using the [Scrypt](https://tools.ietf.org/html/rfc7914.html)
-/// key derivation function. The keystore is encrypted by a key derived from the provided `password`.
+/// Creates a new keystore using the 
+/// [Scrypt](https://tools.ietf.org/html/rfc7914.html)
+/// key derivation function.
+///
+/// The keystore is encrypted by a key derived from the provided `password`.
 ///
 /// # Example
 ///
@@ -86,7 +95,7 @@ pub fn new<R, S>(
     rng: &mut R,
     password: S,
     address: Option<String>,
-) -> Result<(EthKeystore, Vec<u8>), KeystoreError>
+) -> Result<(KeyStore, Vec<u8>), KeyStoreError>
 where
     R: Rng + CryptoRng,
     S: AsRef<[u8]>,
@@ -98,8 +107,9 @@ where
     Ok((encrypt_key(rng, &pk, password, address)?, pk))
 }
 
-/// Decrypts an encrypted JSON keystore at the provided `path` using the provided `password`.
-/// Decryption supports the [Scrypt](https://tools.ietf.org/html/rfc7914.html) and
+/// Decrypts an encrypted keystore using the provided `password`.
+/// Decryption supports the 
+/// [Scrypt](https://tools.ietf.org/html/rfc7914.html) and
 /// [PBKDF2](https://ietf.org/rfc/rfc2898.txt) key derivation functions.
 ///
 /// # Example
@@ -116,9 +126,9 @@ where
 /// # }
 /// ```
 pub fn decrypt_key<S>(
-    keystore: &EthKeystore,
+    keystore: &KeyStore,
     password: S,
-) -> Result<Vec<u8>, KeystoreError>
+) -> Result<Vec<u8>, KeyStoreError>
 where
     S: AsRef<[u8]>,
 {
@@ -166,7 +176,7 @@ where
         .finalize();
 
     if derived_mac.as_slice() != keystore.crypto.mac.as_slice() {
-        return Err(KeystoreError::MacMismatch);
+        return Err(KeyStoreError::MacMismatch);
     }
 
     // Decrypt the private key bytes using AES-128-CTR
@@ -181,7 +191,7 @@ where
     Ok(pk)
 }
 
-/// Encrypts the given private key using the 
+/// Encrypts the given private key using the
 /// [Scrypt](https://tools.ietf.org/html/rfc7914.html)
 /// password-based key derivation function.
 ///
@@ -209,7 +219,7 @@ pub fn encrypt_key<R, B, S>(
     pk: B,
     password: S,
     address: Option<String>,
-) -> Result<EthKeystore, KeystoreError>
+) -> Result<KeyStore, KeyStoreError>
 where
     R: Rng + CryptoRng,
     B: AsRef<[u8]>,
@@ -246,11 +256,11 @@ where
     let id = Uuid::new_v4();
 
     // Construct and serialize the encrypted JSON keystore.
-    let keystore = EthKeystore {
+    let keystore = KeyStore {
         id,
         address,
         version: 3,
-        crypto: CryptoJson {
+        crypto: CryptoData {
             cipher: String::from(DEFAULT_CIPHER),
             cipherparams: CipherParams { iv },
             ciphertext: ciphertext.to_vec(),
